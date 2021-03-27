@@ -1,11 +1,17 @@
 #include <Servo.h>
+#include <LiquidCrystal.h>
 
 //#define RESET_ANGLES
+//#define DEBUG
 
 Servo sv1, sv2;
-const double arm_len = 1.0;
+LiquidCrystal lcd(9, 8, 2, 3, 4, 7);
 
+const double arm_len = 1.0;
 const double arm_len_sq = arm_len * arm_len;
+#ifdef DEBUG
+int updatet = 0;
+#endif
 
 typedef struct Vector2 {
   double x;
@@ -31,6 +37,17 @@ void apply_angles(Vector2 angles) {
 
 void apply_coords(Vector2 point) {
   apply_angles(get_servo_angles(point));
+  #ifdef DEBUG
+  if (updatet % 100 == 0) {
+    lcd.clear();
+    lcd.print("Coord:");
+    lcd.print(point.x);
+    lcd.print(",");
+    lcd.print(point.y);
+    updatet = 0;
+  }
+  updatet++;
+  #endif
 }
 
 Vector2 bezier_curve(const Vector2 *control_points, int len, double t) {
@@ -71,31 +88,38 @@ void draw_polygon(const Vector2 *points, int len) {
   }
 }
 
+void draw_arc(Vector2 center, double radius, double rad1, double rad2) {
+  for (double r=rad1;r<rad2;r+=0.005) {
+    apply_coords({center.x+radius*cos(r), center.y+radius*sin(r)});
+    delay(2);
+  }
+}
+
 void setup() {
   Serial.begin(9600);
   sv1.attach(5);
   sv2.attach(6);
+  lcd.begin(16, 2);
+  lcd.clear();
 }
 
-#ifdef RESET_ANGLES
+#ifndef RESET_ANGLES
 
 void loop() {
-  sv1.write(90);
-  sv2.write(90);
+  lcd.clear();
+  lcd.print("Hand-Writer v1.0");
+  lcd.setCursor(0, 1);
+  lcd.print("Circle test");
+  while (1) {
+    draw_arc({0, 0}, 1, 0, 6.28);
+  }
 }
 
 #else
 
-Vector2 control_points[] =
-{
-  {-1, 0},
-  {1, 0}
-};
 void loop() {
-  draw_bezier_curve(control_points, sizeof(control_points)/sizeof(Vector2));
-  delay(1000);
-  apply_coords({-1, 0});
-  delay(1000);
+  sv1.write(90);
+  sv2.write(90);
 }
 
 #endif
