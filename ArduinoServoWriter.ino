@@ -33,35 +33,6 @@ void apply_coords(Vector2 point) {
   apply_angles(get_servo_angles(point));
 }
 
-void draw_line(Vector2 p1, Vector2 p2) {
-  if (abs(p1.x-p2.x)>0.01) {
-    double len = sqrt((p2.x-p1.x)*(p2.x-p1.x)+(p2.y-p1.y)*(p2.y-p1.y));
-    double k = (p2.y-p1.y)/(p2.x-p1.x);
-    double ct = 1/sqrt(k*k+1), st=ct*k;
-    if (p1.x > p2.x) {
-      st = -st;
-      ct = -ct;
-    }
-    for (double t=0;t<len;t+=0.01) {
-      apply_coords({ct*t+p1.x, st*t+p1.y});
-      delay(2);
-    }
-  } else {
-    double dy = (p1.y > p2.y) ? -1.0 : 1.0;
-    double len = abs(p2.y-p1.y);
-    for (double t=0;t<len;t+=0.01) {
-      apply_coords({p1.x, t*dy+p1.y});
-      delay(2);
-    }
-  }
-}
-
-void draw_polygon(const Vector2 *points, int len) {
-  for (int i=1;i<len;i++) {
-    draw_line(points[i-1], points[i]);
-  }
-}
-
 Vector2 bezier_curve(const Vector2 *control_points, int len, double t) {
   if (len == 2) {
     Vector2 *p1=control_points, *p2=control_points+1;
@@ -86,6 +57,17 @@ void draw_bezier_curve(const Vector2 *control_points, int len, double p_density 
   for (double t=0.0;t<=1.0;t+=p_density) {
     apply_coords(bezier_curve(control_points, len, t));
     delayMicroseconds(250);
+  }
+}
+
+void draw_line(Vector2 p1, Vector2 p2) {
+  Vector2 line[2] = {p1, p2};
+  draw_bezier_curve(line, 2);
+}
+
+void draw_polygon(const Vector2 *points, int len) {
+  for (int i=1;i<len;i++) {
+    draw_line(points[i-1], points[i]);
   }
 }
 
