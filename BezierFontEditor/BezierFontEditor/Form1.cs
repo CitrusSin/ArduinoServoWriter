@@ -62,9 +62,11 @@ namespace BezierFontEditor
             Point p1 = vtp(new Vector2(-1, 1)), p2 = vtp(new Vector2(1, -1));
             graph.FillRectangle(Brushes.White, new Rectangle { X = p1.X, Y = p1.Y, Height = p2.Y-p1.Y, Width = p2.X-p1.X });
             graph.DrawRectangle(Pens.Black, new Rectangle { X = p1.X, Y = p1.Y, Height = p2.Y - p1.Y, Width = p2.X - p1.X });
+            graph.DrawLine(Pens.Red, vtp(new Vector2(0, 1)), vtp(new Vector2(0, -1)));
+            graph.DrawLine(Pens.Red, vtp(new Vector2(-1, 0)), vtp(new Vector2(1, 0)));
             foreach (List<Vector2> line in ControlPoints)
             {
-                if (line.Count > 0) {
+                if (line.Count > 0 && checkBox1.Checked) {
                     foreach (Vector2 p in line)
                     {
                         Point loc = vtp(p);
@@ -149,6 +151,11 @@ namespace BezierFontEditor
             }
             var data = string.Join(";", lines.ToArray());
             Clipboard.SetText(data);
+        }
+
+        private void CheckBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            panel1.Invalidate();
         }
     }
 }
