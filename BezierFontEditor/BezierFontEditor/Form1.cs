@@ -144,7 +144,7 @@ namespace BezierFontEditor
                     List<string> points = new List<string>();
                     foreach (Vector2 point in line)
                     {
-                        points.Add(point.ToString());
+                        points.Add(((int)(point.X * 100)).ToString()+","+((int)(point.Y*100)).ToString());
                     }
                     lines.Add(string.Join("+", points.ToArray()));
                 }
@@ -155,6 +155,40 @@ namespace BezierFontEditor
 
         private void CheckBox1_CheckedChanged(object sender, EventArgs e)
         {
+            panel1.Invalidate();
+        }
+
+        private void Button4_Click(object sender, EventArgs e)
+        {
+            bool useOld = checkBox2.Checked;
+            ControlPoints.Clear();
+            string input = textBox1.Text;
+            string[] lines = input.Split(';');
+            foreach (string line in lines)
+            {
+                List<Vector2> vecs = new List<Vector2>();
+                string[] svs = line.Split('+');
+                foreach (string vec in svs)
+                {
+                    string[] tuple = vec.Split(',');
+                    vecs.Add(
+                        useOld ? new Vector2(
+                            double.Parse(tuple[0]),
+                            double.Parse(tuple[1])
+                            )
+                        :
+                        new Vector2(
+                            int.Parse(tuple[0]) * .01,
+                            int.Parse(tuple[1]) * .01
+                            )
+                        );
+                }
+                ControlPoints.Add(vecs);
+            }
+            if (ControlPoints.Count == 0 || ControlPoints.Last().Count != 0)
+            {
+                ControlPoints.Add(new List<Vector2>());
+            }
             panel1.Invalidate();
         }
     }
