@@ -4,6 +4,14 @@
 //#define RESET_ANGLES
 //#define DEBUG
 
+const char *characters[256];
+
+void setup_characters() {
+  characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
+  characters['b'] = "-26,47+-22,0+-27,-37;-27,-37+-25,0+-2,73+90,1+0,-75+-27,-37";
+  characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
+}
+
 Servo sv1, sv2;
 LiquidCrystal lcd(9, 8, 2, 3, 4, 7);
 
@@ -95,7 +103,49 @@ void draw_arc(Vector2 center, double radius, double rad1, double rad2) {
   }
 }
 
+void draw_figurestr(const char* figure) {
+  int len = strlen(figure);
+  int curve_count = 1;
+  for (char *ptr = figure;*ptr!='\0';ptr++) {
+    if (*ptr == ';') {
+      curve_count++;
+    }
+  }
+  char *str = new char[len];
+  strcpy(str, figure);
+  char **figures = new char[curve_count];
+  figures[0] = str;
+  int str_count = 1;
+  for (char *ptr=str;*ptr!='\0';ptr++) {
+    if (*ptr == ';') {
+      *ptr = '\0';
+      str[str_count] = ptr+1;
+      str_count++;
+    }
+  }
+  for (int i=0;i<curve_count;i++) {
+    char* figure = figures[i];
+    int fig_len = strlen(figure);
+    int splits_len = 1;
+    for (int j=0;j<fig_len；j++) {
+      if (figure[j] == ',') {
+        splits_len++;
+      }
+    }
+    Vector2 *vectors = new Vector2[splits_len];
+    char sz_x[4];
+    char sz_y[4];
+    int split_count = 0;
+    for (int j=0;j<fig_len;j++) {
+      
+    }
+  }
+  delete figures;
+  delete str;
+}
+
 void setup() {
+  setup_characters();
   Serial.begin(9600);
   sv1.attach(5);
   sv2.attach(6);
