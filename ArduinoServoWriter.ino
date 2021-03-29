@@ -104,41 +104,42 @@ void draw_arc(Vector2 center, double radius, double rad1, double rad2) {
 }
 
 void draw_figurestr(const char* figure) {
-  int len = strlen(figure);
   int curve_count = 1;
   for (char *ptr = figure;*ptr!='\0';ptr++) {
     if (*ptr == ';') {
       curve_count++;
     }
   }
-  char *str = new char[len];
+  char *str = new char[strlen(figure)+1];
   strcpy(str, figure);
   char **figures = new char[curve_count];
-  figures[0] = str;
-  int str_count = 1;
-  for (char *ptr=str;*ptr!='\0';ptr++) {
-    if (*ptr == ';') {
-      *ptr = '\0';
-      str[str_count] = ptr+1;
-      str_count++;
-    }
+  int counter = 0;
+  char *figures_token = strtok(str, ";");
+  while (figures_token) {
+    figures[counter] = figures_token;
+    counter++;
+    figures_token = strtok(NULL, ";");
   }
   for (int i=0;i<curve_count;i++) {
-    char* figure = figures[i];
-    int fig_len = strlen(figure);
-    int splits_len = 1;
-    for (int j=0;j<fig_len；j++) {
-      if (figure[j] == ',') {
-        splits_len++;
+    char *figure = figures[i];
+    int vector_count = 1;
+    for (char *ptr=figure;*ptr!='\0';ptr++) {
+      if (*ptr == '+') {
+        vector_count++;
       }
     }
-    Vector2 *vectors = new Vector2[splits_len];
-    char sz_x[4];
-    char sz_y[4];
-    int split_count = 0;
-    for (int j=0;j<fig_len;j++) {
-      
+    Vector2 *vectors = new Vector2[vector_count];
+    counter = 0;
+    char *t = strtok(figure, "+");
+    while (t) {
+      int i1, i2;
+      sscanf(t, "%d,%d", &i1, &i2);
+      vectors[counter] = {i1*0.01, i2*0.01};
+      counter++;
+      t = strtok(NULL, "+");
     }
+    draw_bezier_curve(vectors, vector_count);
+    delete vectors;
   }
   delete figures;
   delete str;
