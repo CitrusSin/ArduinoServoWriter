@@ -6,12 +6,6 @@
 
 const char *characters[256];
 
-void setup_characters() {
-  characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
-  characters['b'] = "-26,47+-22,0+-27,-37;-27,-37+-25,0+-2,73+90,1+0,-75+-27,-37";
-  characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
-}
-
 Servo sv1, sv2;
 LiquidCrystal lcd(9, 8, 2, 3, 4, 7);
 
@@ -21,29 +15,35 @@ const double arm_len_sq = arm_len * arm_len;
 int updatet = 0;
 #endif
 
-typedef struct Vector2 {
+typedef struct vector2 {
   double x;
   double y;
-} Vector2;
+}vector2;
 
-Vector2 get_servo_angles(Vector2 p) {
-  Vector2 point = {p.x*.3, p.y*.3+1.5};
+void setup_characters() {
+  characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
+  characters['b'] = "-26,47+-22,0+-27,-37;-27,-37+-25,0+-2,73+90,1+0,-75+-27,-37";
+  characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
+}
+
+vector2 get_servo_angles(vector2 p) {
+  vector2 point = {p.x*.3, p.y*.3+1.5};
   double r_sq = point.x*point.x+point.y*point.y;
   double cos_d_angle = r_sq/(2*arm_len_sq)-1;
   double d_angle = acos(cos_d_angle);
   double bas_angle = atan2(point.y, point.x);
-  Vector2 angles;
+  vector2 angles;
   angles.x = bas_angle + d_angle/2;
   angles.y = bas_angle - d_angle/2;
   return angles;
 }
 
-void apply_angles(Vector2 angles) {
+void apply_angles(vector2 angles) {
   sv1.write(angles.x * 57.2975); // 1rad = 57.2975deg
   sv2.write(angles.y * 57.2975);
 }
 
-void apply_coords(Vector2 point) {
+void apply_coords(vector2 point) {
   apply_angles(get_servo_angles(point));
   #ifdef DEBUG
   if (updatet % 100 == 0) {
@@ -58,19 +58,19 @@ void apply_coords(Vector2 point) {
   #endif
 }
 
-Vector2 bezier_curve(const Vector2 *control_points, int len, double t) {
+vector2 bezier_curve(const vector2 *control_points, int len, double t) {
   if (len == 2) {
-    Vector2 *p1=control_points, *p2=control_points+1;
+    vector2 *p1=control_points, *p2=control_points+1;
     double dx = p2->x-p1->x, dy = p2->y-p1->y;
     return {p1->x+dx*t, p1->y+dy*t};
   } else if (len > 2) {
-    Vector2 *np = new Vector2[len-1];
+    vector2 *np = new vector2[len-1];
     for (int i=0;i<len-1;i++) {
       double dx = control_points[i+1].x-control_points[i].x,
              dy = control_points[i+1].y-control_points[i].y;
       np[i] = {control_points[i].x+dx*t, control_points[i].y+dy*t};
     }
-    Vector2 result = bezier_curve(np, len-1, t);
+    vector2 result = bezier_curve(np, len-1, t);
     delete np;
     return result;
   } else {
@@ -78,25 +78,25 @@ Vector2 bezier_curve(const Vector2 *control_points, int len, double t) {
   }
 }
 
-void draw_bezier_curve(const Vector2 *control_points, int len, double p_density = .001) {
+void draw_bezier_curve(const vector2 *control_points, int len, double p_density = .001) {
   for (double t=0.0;t<=1.0;t+=p_density) {
     apply_coords(bezier_curve(control_points, len, t));
     delayMicroseconds(250);
   }
 }
 
-void draw_line(Vector2 p1, Vector2 p2) {
-  Vector2 line[2] = {p1, p2};
+void draw_line(vector2 p1, vector2 p2) {
+  vector2 line[2] = {p1, p2};
   draw_bezier_curve(line, 2);
 }
 
-void draw_polygon(const Vector2 *points, int len) {
+void draw_polygon(const vector2 *points, int len) {
   for (int i=1;i<len;i++) {
     draw_line(points[i-1], points[i]);
   }
 }
 
-void draw_arc(Vector2 center, double radius, double rad1, double rad2) {
+void draw_arc(vector2 center, double radius, double rad1, double rad2) {
   for (double r=rad1;r<rad2;r+=0.005) {
     apply_coords({center.x+radius*cos(r), center.y+radius*sin(r)});
     delay(2);
@@ -112,7 +112,7 @@ void draw_figurestr(const char* figure) {
   }
   char *str = new char[strlen(figure)+1];
   strcpy(str, figure);
-  char **figures = new char[curve_count];
+  char **figures = new char*[curve_count];
   int counter = 0;
   char *figures_token = strtok(str, ";");
   while (figures_token) {
@@ -128,7 +128,7 @@ void draw_figurestr(const char* figure) {
         vector_count++;
       }
     }
-    Vector2 *vectors = new Vector2[vector_count];
+    vector2 *vectors = new vector2[vector_count];
     counter = 0;
     char *t = strtok(figure, "+");
     while (t) {
