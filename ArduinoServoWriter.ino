@@ -1,12 +1,12 @@
 #include <Servo.h>
 #include <LiquidCrystal.h>
 
-//#define RESET_ANGLES
+#define RESET_ANGLES
 //#define DEBUG
 
 const char *characters[256];
 
-Servo sv1, sv2;
+Servo sv1, sv2, sv_pen;
 LiquidCrystal lcd(9, 8, 2, 3, 4, 7);
 
 const double arm_len = 1.0;
@@ -24,6 +24,12 @@ void setup_characters() {
   characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
   characters['b'] = "-26,47+-22,0+-27,-37;-27,-37+-25,0+-2,73+90,1+0,-75+-27,-37";
   characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
+}
+
+void attach_servos() {
+  sv1.attach(5);
+  sv2.attach(6);
+  sv_pen.attach(10);
 }
 
 vector2 get_servo_angles(vector2 p) {
@@ -134,7 +140,7 @@ void draw_figurestr(const char* figure) {
     while (t) {
       int i1, i2;
       sscanf(t, "%d,%d", &i1, &i2);
-      vectors[counter] = {i1*0.01, i2*0.01};
+      vectors[counter] = {i1*0.02, i2*0.02};
       counter++;
       t = strtok(NULL, "+");
     }
@@ -147,9 +153,8 @@ void draw_figurestr(const char* figure) {
 
 void setup() {
   setup_characters();
+  attach_servos();
   Serial.begin(9600);
-  sv1.attach(5);
-  sv2.attach(6);
   lcd.begin(16, 2);
   lcd.clear();
 }
@@ -160,10 +165,8 @@ void loop() {
   lcd.clear();
   lcd.print("Hand-Writer v1.0");
   lcd.setCursor(0, 1);
-  lcd.print("Circle test");
-  while (1) {
-    draw_arc({0, 0}, 1, 0, 6.28);
-  }
+  lcd.print("test");
+  draw_figurestr(characters['a']);
 }
 
 #else
@@ -171,6 +174,7 @@ void loop() {
 void loop() {
   sv1.write(90);
   sv2.write(90);
+  sv_pen.write(45);
 }
 
 #endif
