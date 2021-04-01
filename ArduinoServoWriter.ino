@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include <LiquidCrystal.h>
 
-#define RESET_ANGLES
+//#define RESET_ANGLES
 //#define DEBUG
 
 const char *characters[256];
@@ -30,6 +30,21 @@ void attach_servos() {
   sv1.attach(5);
   sv2.attach(6);
   sv_pen.attach(10);
+  sv_pen.write(45);
+}
+
+#define DROP 0
+#define HANG 1
+void pen(int state) {
+  switch (state) {
+    case DROP:
+      sv_pen.write(0);
+    break;
+    case HANG:
+      sv_pen.write(25);
+    break;
+  }
+  delay(500);
 }
 
 vector2 get_servo_angles(vector2 p) {
@@ -85,9 +100,15 @@ vector2 bezier_curve(const vector2 *control_points, int len, double t) {
 }
 
 void draw_bezier_curve(const vector2 *control_points, int len, double p_density = .001) {
-  for (double t=0.0;t<=1.0;t+=p_density) {
-    apply_coords(bezier_curve(control_points, len, t));
-    delayMicroseconds(250);
+  if (len > 0) {
+    apply_coords(control_points[0]);
+    delay(10);
+    pen(DROP);
+    for (double t=0.0;t<=1.0;t+=p_density) {
+      apply_coords(bezier_curve(control_points, len, t));
+      delayMicroseconds(250);
+    }
+    pen(HANG);
   }
 }
 
@@ -103,10 +124,14 @@ void draw_polygon(const vector2 *points, int len) {
 }
 
 void draw_arc(vector2 center, double radius, double rad1, double rad2) {
+  apply_coords({center.x+radius*cos(rad1), center.y+radius*sin(rad1)});
+  delay(10);
+  pen(DROP);
   for (double r=rad1;r<rad2;r+=0.005) {
     apply_coords({center.x+radius*cos(r), center.y+radius*sin(r)});
     delay(2);
   }
+  pen(HANG);
 }
 
 void draw_figurestr(const char* figure) {
