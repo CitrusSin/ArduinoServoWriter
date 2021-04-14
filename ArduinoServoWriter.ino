@@ -2,12 +2,12 @@
 #include <LiquidCrystal.h>
 
 //#define RESET_ANGLES
-//#define DEBUG
+#define DEBUG
 
 const char *characters[256];
 
 Servo sv1, sv2, sv_pen;
-LiquidCrystal lcd(9, 8, 2, 3, 4, 7);
+LiquidCrystal lcd(9, 8, 2, 3, 4, 7); 
 
 const double arm_len = 1.0;
 const double arm_len_sq = arm_len * arm_len;
@@ -21,8 +21,13 @@ typedef struct vector2 {
 }vector2;
 
 void setup_characters() {
+  characters['1'] = "2,34+1,-27";
+  characters['2'] = "-26,6+-2,46+18,27+32,0+-18,-41;-18,-42+16,-41+24,-43";
+  characters['3'] = "-10,21+0,30+13,23+12,9+0,0;0,0+10,0+20,-20+0,-28+-11,-19";
+  characters['4'] = "-4,25+-21,0;-21,0+12,0H;0,13+0,-25";
+  characters['5'] = "-10,20+-14,2;-13,2+0,14+12,1+12,-14+0,-21+-14,-15H;-10,20+13,20";
   characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
-  characters['b'] = "-26,47+-22,0+-27,-37;-27,-37+-25,0+-2,73+90,1+0,-75+-27,-37";
+  characters['b'] = "-15,34+-17,-20;-17,-20+-17,0+0,15+16,1+16,-26+-1,-29+-23,-14";
   characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
 }
 
@@ -30,21 +35,34 @@ void attach_servos() {
   sv1.attach(5);
   sv2.attach(6);
   sv_pen.attach(10);
-  sv_pen.write(45);
+  sv_pen.write(28);
+}
+
+void soft_approach_servo(Servo *sv, double fromAngle, double toAngle) {
+  for (double nowAngle = fromAngle; abs(nowAngle-toAngle) > 0.05; nowAngle += (toAngle-nowAngle)*0.5) {
+    sv->write((int)nowAngle);
+    delay(100);
+  }
+  sv->write(toAngle);
 }
 
 #define DROP 0
 #define HANG 1
+int pen_state = HANG;
 void pen(int state) {
   switch (state) {
     case DROP:
-      sv_pen.write(0);
+      if (pen_state == HANG) {
+        soft_approach_servo(&sv_pen, 28, 14);
+        pen_state = DROP;
+      }
     break;
     case HANG:
-      sv_pen.write(25);
+      sv_pen.write(28);
+      pen_state = HANG;
     break;
   }
-  delay(500);
+  delay(100);
 }
 
 vector2 get_servo_angles(vector2 p) {
@@ -101,14 +119,10 @@ vector2 bezier_curve(const vector2 *control_points, int len, double t) {
 
 void draw_bezier_curve(const vector2 *control_points, int len, double p_density = .001) {
   if (len > 0) {
-    apply_coords(control_points[0]);
-    delay(10);
-    pen(DROP);
     for (double t=0.0;t<=1.0;t+=p_density) {
       apply_coords(bezier_curve(control_points, len, t));
-      delayMicroseconds(250);
+      delayMicroseconds(0);
     }
-    pen(HANG);
   }
 }
 
@@ -126,7 +140,6 @@ void draw_polygon(const vector2 *points, int len) {
 void draw_arc(vector2 center, double radius, double rad1, double rad2) {
   apply_coords({center.x+radius*cos(rad1), center.y+radius*sin(rad1)});
   delay(10);
-  pen(DROP);
   for (double r=rad1;r<rad2;r+=0.005) {
     apply_coords({center.x+radius*cos(r), center.y+radius*sin(r)});
     delay(2);
@@ -134,7 +147,7 @@ void draw_arc(vector2 center, double radius, double rad1, double rad2) {
   pen(HANG);
 }
 
-void draw_figurestr(const char* figure) {
+void draw_figurestr(const char* figure, vector2 offset={0, 0}) {
   int curve_count = 1;
   for (char *ptr = figure;*ptr!='\0';ptr++) {
     if (*ptr == ';') {
@@ -161,19 +174,31 @@ void draw_figurestr(const char* figure) {
     }
     vector2 *vectors = new vector2[vector_count];
     counter = 0;
+    bool hang = false;
+    if (figure[strlen(figure)-1] == 'H') {
+      hang = true;
+      figure[strlen(figure)-1] = '\0';
+    }
     char *t = strtok(figure, "+");
     while (t) {
       int i1, i2;
       sscanf(t, "%d,%d", &i1, &i2);
-      vectors[counter] = {i1*0.02, i2*0.02};
+      vectors[counter] = {i1*0.02+offset.x, i2*0.02+offset.y};
       counter++;
       t = strtok(NULL, "+");
     }
+    apply_coords(vectors[0]);
+    delay(500);
+    pen(DROP);
     draw_bezier_curve(vectors, vector_count);
+    if (hang) {
+      pen(HANG);
+    }
     delete vectors;
   }
   delete figures;
   delete str;
+  pen(HANG);
 }
 
 void setup() {
@@ -182,24 +207,47 @@ void setup() {
   Serial.begin(9600);
   lcd.begin(16, 2);
   lcd.clear();
+  pen(HANG);
+  delay(500);
+  apply_coords({0, 0});
 }
 
 #ifndef RESET_ANGLES
 
+#ifndef DEBUG
 void loop() {
   lcd.clear();
   lcd.print("Hand-Writer v1.0");
   lcd.setCursor(0, 1);
   lcd.print("test");
-  draw_figurestr(characters['a']);
+  delay(5000);
 }
+#else
+void loop() {
+  lcd.clear();
+  lcd.print("Hand-Writer v1.0");
+  lcd.setCursor(0, 1);
+  lcd.print("test");
+  delay(5000);
+  Serial.println("Reading a char");
+  while (true) {
+    int c = Serial.read();
+    if (c > 0 && c != '\n') {
+      Serial.print("Writing ");
+      Serial.println((char)c);
+      draw_figurestr(characters[c]);
+      Serial.println("Reading a char");
+    }
+  }
+}
+#endif
 
 #else
 
 void loop() {
   sv1.write(90);
   sv2.write(90);
-  sv_pen.write(45);
+  sv_pen.write(20);
 }
 
 #endif
