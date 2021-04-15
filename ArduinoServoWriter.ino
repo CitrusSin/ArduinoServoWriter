@@ -2,7 +2,7 @@
 #include <LiquidCrystal.h>
 
 //#define RESET_ANGLES
-#define DEBUG
+//#define DEBUG
 
 const char *characters[256];
 
@@ -11,9 +11,6 @@ LiquidCrystal lcd(9, 8, 2, 3, 4, 7);
 
 const double arm_len = 1.0;
 const double arm_len_sq = arm_len * arm_len;
-#ifdef DEBUG
-int updatet = 0;
-#endif
 
 typedef struct vector2 {
   double x;
@@ -22,10 +19,10 @@ typedef struct vector2 {
 
 void setup_characters() {
   characters['1'] = "2,34+1,-27";
-  characters['2'] = "-26,6+-2,46+18,27+32,0+-18,-41;-18,-42+16,-41+24,-43";
-  characters['3'] = "-10,21+0,30+13,23+12,9+0,0;0,0+10,0+20,-20+0,-28+-11,-19";
-  characters['4'] = "-4,25+-21,0;-21,0+12,0H;0,13+0,-25";
-  characters['5'] = "-10,20+-14,2;-13,2+0,14+12,1+12,-14+0,-21+-14,-15H;-10,20+13,20";
+  characters['2'] = "-12,7+0,21+9,14+18,0+-8,-21;-8,-21+13,-20";
+  characters['3'] = "-14,9+0,22+13,16+11,2+-4,0+-6,0;-6,0+6,2+10,-3+10,-15+1,-20+-8,-20+-10,-15";
+  characters['4'] = "0,25+-21,0;-21,0+23,0H;0,24+0,-22";
+  characters['5'] = "-13,24+-14,0;-14,0+0,16+16,-1+11,-23+1,-25+-11,-19H;-13,23+9,24";
   characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
   characters['b'] = "-15,34+-17,-20;-17,-20+-17,0+0,15+16,1+16,-26+-1,-29+-23,-14";
   characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
@@ -35,7 +32,7 @@ void attach_servos() {
   sv1.attach(5);
   sv2.attach(6);
   sv_pen.attach(10);
-  sv_pen.write(28);
+  sv_pen.write(30);
 }
 
 void soft_approach_servo(Servo *sv, double fromAngle, double toAngle) {
@@ -53,12 +50,12 @@ void pen(int state) {
   switch (state) {
     case DROP:
       if (pen_state == HANG) {
-        soft_approach_servo(&sv_pen, 28, 14);
+        soft_approach_servo(&sv_pen, 30, 11);
         pen_state = DROP;
       }
     break;
     case HANG:
-      sv_pen.write(28);
+      sv_pen.write(30);
       pen_state = HANG;
     break;
   }
@@ -84,17 +81,6 @@ void apply_angles(vector2 angles) {
 
 void apply_coords(vector2 point) {
   apply_angles(get_servo_angles(point));
-  #ifdef DEBUG
-  if (updatet % 100 == 0) {
-    lcd.clear();
-    lcd.print("Coord:");
-    lcd.print(point.x);
-    lcd.print(",");
-    lcd.print(point.y);
-    updatet = 0;
-  }
-  updatet++;
-  #endif
 }
 
 vector2 bezier_curve(const vector2 *control_points, int len, double t) {
@@ -117,12 +103,13 @@ vector2 bezier_curve(const vector2 *control_points, int len, double t) {
   }
 }
 
-void draw_bezier_curve(const vector2 *control_points, int len, double p_density = .001) {
+void draw_bezier_curve(const vector2 *control_points, int len, double p_density = .002) {
   if (len > 0) {
     for (double t=0.0;t<=1.0;t+=p_density) {
       apply_coords(bezier_curve(control_points, len, t));
-      delayMicroseconds(0);
+      //delayMicroseconds(10);
     }
+    apply_coords(control_points[len-1]);
   }
 }
 
@@ -183,13 +170,15 @@ void draw_figurestr(const char* figure, vector2 offset={0, 0}) {
     while (t) {
       int i1, i2;
       sscanf(t, "%d,%d", &i1, &i2);
-      vectors[counter] = {i1*0.02+offset.x, i2*0.02+offset.y};
+      vectors[counter] = {i1*0.02+offset.x*0.02, i2*0.02+offset.y*0.02};
       counter++;
       t = strtok(NULL, "+");
     }
     apply_coords(vectors[0]);
-    delay(500);
-    pen(DROP);
+    if (pen_state == HANG) {
+      delay(500);
+      pen(DROP);
+    }
     draw_bezier_curve(vectors, vector_count);
     if (hang) {
       pen(HANG);
@@ -198,6 +187,7 @@ void draw_figurestr(const char* figure, vector2 offset={0, 0}) {
   }
   delete figures;
   delete str;
+  delay(500);
   pen(HANG);
 }
 
@@ -220,7 +210,13 @@ void loop() {
   lcd.print("Hand-Writer v1.0");
   lcd.setCursor(0, 1);
   lcd.print("test");
-  delay(5000);
+  delay(2000);
+  draw_figurestr(characters['2'], {-25, 0});
+  draw_figurestr(characters['3'], {0,0});
+  draw_figurestr(characters['4'], {25, 0});
+  while (true) {
+    delay(1000);
+  }
 }
 #else
 void loop() {
@@ -228,7 +224,7 @@ void loop() {
   lcd.print("Hand-Writer v1.0");
   lcd.setCursor(0, 1);
   lcd.print("test");
-  delay(5000);
+  delay(2000);
   Serial.println("Reading a char");
   while (true) {
     int c = Serial.read();
