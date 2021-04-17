@@ -83,6 +83,27 @@ void apply_coords(vector2 point) {
   apply_angles(get_servo_angles(point));
 }
 
+vector2 bezier_curve_recursive(vector2 *control_points, int len, double t) {
+  if (len == 2) {
+    vector2 *p1=control_points, *p2=control_points+1;
+    double dx = p2->x-p1->x, dy = p2->y-p1->y;
+    return {p1->x+dx*t, p1->y+dy*t};
+  } else if (len > 2) {
+    vector2 *np = new vector2[len-1];
+    for (int i=0;i<len-1;i++) {
+      double dx = control_points[i+1].x-control_points[i].x,
+             dy = control_points[i+1].y-control_points[i].y;
+      np[i] = {control_points[i].x+dx*t, control_points[i].y+dy*t};
+    }
+    delete control_points;
+    vector2 result = bezier_curve(np, len-1, t);
+    delete np;
+    return result;
+  } else {
+    return {0, 0};
+  }
+}
+
 vector2 bezier_curve(const vector2 *control_points, int len, double t) {
   if (len == 2) {
     vector2 *p1=control_points, *p2=control_points+1;
@@ -95,8 +116,7 @@ vector2 bezier_curve(const vector2 *control_points, int len, double t) {
              dy = control_points[i+1].y-control_points[i].y;
       np[i] = {control_points[i].x+dx*t, control_points[i].y+dy*t};
     }
-    vector2 result = bezier_curve(np, len-1, t);
-    delete np;
+    vector2 result = bezier_curve_recursive(np, len-1, t);
     return result;
   } else {
     return {0, 0};
