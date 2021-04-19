@@ -60,10 +60,12 @@ void pen(int state) {
       }
     break;
     case HANG:
-      sv_pen.write(32);
-      delay(100);
-      sv_pen.write(30);
-      pen_state = HANG;
+      if (pen_state == DROP) {
+        sv_pen.write(32);
+        delay(100);
+        sv_pen.write(30);
+        pen_state = HANG;
+      }
     break;
   }
 }
