@@ -18,14 +18,19 @@ typedef struct vector2 {
 }vector2;
 
 void setup_characters() {
+  characters['0'] = "0,28+-12,27+-15,0;-15,0+-13,-28+0,-27;0,-26+15,-26+16,-1;16,-1+14,26+0,27";
   characters['1'] = "2,34+1,-27";
   characters['2'] = "-12,7+0,21+9,14+18,0+-8,-21;-8,-21+13,-20";
   characters['3'] = "-14,9+0,22+13,16+11,2+-4,0+-6,0;-6,0+6,2+10,-3+10,-15+1,-20+-8,-20+-10,-15";
   characters['4'] = "0,25+-21,0;-21,0+23,0H;0,24+0,-22";
   characters['5'] = "-13,24+-14,0;-14,0+0,16+16,-1+11,-23+1,-25+-11,-19H;-13,23+9,24";
-  characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
-  characters['b'] = "-15,34+-17,-20;-17,-20+-17,0+0,15+16,1+16,-26+-1,-29+-23,-14";
-  characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
+  characters['6'] = "12,26+0,38+-20,22+-17,-23+0,-22;0,-22+14,-22+12,0+0,5+-4,5;-4,5+-8,5+-12,-1";
+  characters['7'] = "-12,16+12,16;12,16+0,9+0,-14+0,-21";
+  characters['8'] = "10,19+-2,39+-19,19+0,0;0,0+20,-20+0,-44+-14,-22;-14,-22+-16,-18+0,0+13,20";
+  characters['9'] = "13,17+0,31+-22,15+-8,-18+14,16;13,16+7,-25";
+  //characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
+  //characters['b'] = "-15,34+-17,-20;-17,-20+-17,0+0,15+16,1+16,-26+-1,-29+-23,-14";
+  //characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
 }
 
 void attach_servos() {
@@ -55,11 +60,12 @@ void pen(int state) {
       }
     break;
     case HANG:
+      sv_pen.write(32);
+      delay(100);
       sv_pen.write(30);
       pen_state = HANG;
     break;
   }
-  delay(100);
 }
 
 vector2 get_servo_angles(vector2 p) {
@@ -135,23 +141,35 @@ void draw_arc(vector2 center, double radius, double rad1, double rad2) {
 }
 
 void draw_figurestr(const char* figure, vector2 offset={0, 0}) {
+  Serial.println("Using figure string");
+  Serial.println(figure);
   int curve_count = 1;
   for (char *ptr = figure;*ptr!='\0';ptr++) {
     if (*ptr == ';') {
       curve_count++;
     }
   }
+  Serial.print("Curve count ");
+  Serial.println(curve_count);
   char *str = new char[strlen(figure)+1];
   strcpy(str, figure);
   char **figures = new char*[curve_count];
   int counter = 0;
-  char *figures_token = strtok(str, ";");
-  while (figures_token) {
-    figures[counter] = figures_token;
-    counter++;
-    figures_token = strtok(NULL, ";");
+  if (curve_count > 1) {
+    char *figures_token = strtok(str, ";");
+    while (figures_token) {
+      figures[counter] = figures_token;
+      counter++;
+      figures_token = strtok(NULL, ";");
+    }
+  } else {
+    figures[0] = str;
   }
+  Serial.println("Seperate succeed");
   for (int i=0;i<curve_count;i++) {
+    Serial.print("Curve #");
+    Serial.print(i);
+    Serial.print(' ');
     char *figure = figures[i];
     int vector_count = 1;
     for (char *ptr=figure;*ptr!='\0';ptr++) {
@@ -160,6 +178,8 @@ void draw_figurestr(const char* figure, vector2 offset={0, 0}) {
       }
     }
     vector2 *vectors = new vector2[vector_count];
+    Serial.print("VectorCount: ");
+    Serial.println(vector_count);
     counter = 0;
     bool hang = false;
     if (figure[strlen(figure)-1] == 'H') {
@@ -174,6 +194,8 @@ void draw_figurestr(const char* figure, vector2 offset={0, 0}) {
       counter++;
       t = strtok(NULL, "+");
     }
+    Serial.print("Applying curve #");
+    Serial.println(i);
     apply_coords(vectors[0]);
     if (pen_state == HANG) {
       delay(500);
@@ -211,9 +233,10 @@ void loop() {
   lcd.setCursor(0, 1);
   lcd.print("test");
   delay(2000);
-  draw_figurestr(characters['2'], {-25, 0});
-  draw_figurestr(characters['3'], {0,0});
-  draw_figurestr(characters['4'], {25, 0});
+  for (int c='0';c<='9';c++) {
+    draw_figurestr(characters[c]);
+    delay(1000);
+  }
   while (true) {
     delay(1000);
   }
