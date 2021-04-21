@@ -21,13 +21,13 @@ void setup_characters() {
   characters['0'] = "0,28+-12,27+-15,0;-15,0+-13,-28+0,-27;0,-26+15,-26+16,-1;16,-1+14,26+0,27";
   characters['1'] = "2,34+1,-27";
   characters['2'] = "-12,7+0,21+9,14+18,0+-8,-21;-8,-21+13,-20";
-  characters['3'] = "-14,9+0,22+13,16+11,2+-4,0+-6,0;-6,0+6,2+10,-3+10,-15+1,-20+-8,-20+-10,-15";
+  characters['3'] = "-12,18+12,21+0,0+-7,0;-6,-1+12,-3+11,-24+-14,-24";
   characters['4'] = "0,25+-21,0;-21,0+23,0H;0,24+0,-22";
   characters['5'] = "-13,24+-14,0;-14,0+0,16+16,-1+11,-23+1,-25+-11,-19H;-13,23+9,24";
   characters['6'] = "12,26+0,38+-20,22+-17,-23+0,-22;0,-22+14,-22+12,0+0,5+-4,5;-4,5+-8,5+-12,-1";
   characters['7'] = "-12,16+12,16;12,16+0,9+0,-14+0,-21";
   characters['8'] = "10,19+-2,39+-19,19+0,0;0,0+20,-20+0,-44+-14,-22;-14,-22+-16,-18+0,0+13,20";
-  characters['9'] = "13,17+0,31+-22,15+-8,-18+14,16;13,16+7,-25";
+  characters['9'] = "10,10+0,27+-16,13;-16,13+-28,-6+0,-8;0,-8+9,-7+10,9;10,9+9,-45";
   //characters['a'] = "15,9+-1,28+-25,13+-31,-32+-1,-42+14,9;14,9+11,-20+14,-23+18,-19";
   //characters['b'] = "-15,34+-17,-20;-17,-20+-17,0+0,15+16,1+16,-26+-1,-29+-23,-14";
   //characters['c'] = "7,16+0,27+-39,6+-32,-25+-5,-35+7,-18+15,-10";
@@ -37,7 +37,7 @@ void attach_servos() {
   sv1.attach(5);
   sv2.attach(6);
   sv_pen.attach(10);
-  sv_pen.write(30);
+  sv_pen.write(40);
 }
 
 void soft_approach_servo(Servo *sv, double fromAngle, double toAngle) {
@@ -55,14 +55,14 @@ void pen(int state) {
   switch (state) {
     case DROP:
       if (pen_state == HANG) {
-        soft_approach_servo(&sv_pen, 30, 11);
+        soft_approach_servo(&sv_pen, 32, 12);
         pen_state = DROP;
       }
     break;
     case HANG:
-      sv_pen.write(32);
+      sv_pen.write(33);
       delay(100);
-      sv_pen.write(30);
+      sv_pen.write(32);
       pen_state = HANG;
     break;
   }
@@ -89,27 +89,6 @@ void apply_coords(vector2 point) {
   apply_angles(get_servo_angles(point));
 }
 
-vector2 bezier_curve_recursive(vector2 *control_points, int len, double t) {
-  if (len == 2) {
-    vector2 *p1=control_points, *p2=control_points+1;
-    double dx = p2->x-p1->x, dy = p2->y-p1->y;
-    return {p1->x+dx*t, p1->y+dy*t};
-  } else if (len > 2) {
-    vector2 *np = new vector2[len-1];
-    for (int i=0;i<len-1;i++) {
-      double dx = control_points[i+1].x-control_points[i].x,
-             dy = control_points[i+1].y-control_points[i].y;
-      np[i] = {control_points[i].x+dx*t, control_points[i].y+dy*t};
-    }
-    delete control_points;
-    vector2 result = bezier_curve(np, len-1, t);
-    delete np;
-    return result;
-  } else {
-    return {0, 0};
-  }
-}
-
 vector2 bezier_curve(const vector2 *control_points, int len, double t) {
   if (len == 2) {
     vector2 *p1=control_points, *p2=control_points+1;
@@ -122,7 +101,8 @@ vector2 bezier_curve(const vector2 *control_points, int len, double t) {
              dy = control_points[i+1].y-control_points[i].y;
       np[i] = {control_points[i].x+dx*t, control_points[i].y+dy*t};
     }
-    vector2 result = bezier_curve_recursive(np, len-1, t);
+    vector2 result = bezier_curve(np, len-1, t);
+    delete np;
     return result;
   } else {
     return {0, 0};
