@@ -37,7 +37,7 @@ void attach_servos() {
   sv1.attach(5);
   sv2.attach(6);
   sv_pen.attach(10);
-  sv_pen.write(40);
+  sv_pen.write(30);
 }
 
 void soft_approach_servo(Servo *sv, double fromAngle, double toAngle) {
@@ -55,15 +55,17 @@ void pen(int state) {
   switch (state) {
     case DROP:
       if (pen_state == HANG) {
-        soft_approach_servo(&sv_pen, 32, 12);
+        soft_approach_servo(&sv_pen, 30, 12);
         pen_state = DROP;
       }
     break;
     case HANG:
-      sv_pen.write(33);
-      delay(100);
-      sv_pen.write(32);
-      pen_state = HANG;
+      if (pen_state == DROP) {
+        sv_pen.write(32);
+        delay(100);
+        sv_pen.write(30);
+        pen_state = HANG;
+      }
     break;
   }
 }
