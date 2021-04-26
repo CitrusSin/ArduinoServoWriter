@@ -93,7 +93,7 @@ void apply_coords(vector2 point) {
 
 vector2 bezier_curve(const vector2 *control_points, int len, double t) {
   if (len == 2) {
-    vector2 *p1=control_points, *p2=control_points+1;
+    const vector2 *p1=control_points, *p2=control_points+1;
     double dx = p2->x-p1->x, dy = p2->y-p1->y;
     return {p1->x+dx*t, p1->y+dy*t};
   } else if (len > 2) {
@@ -146,7 +146,7 @@ void draw_figurestr(const char* figure, vector2 offset={0, 0}) {
   Serial.println("Using figure string");
   Serial.println(figure);
   int curve_count = 1;
-  for (char *ptr = figure;*ptr!='\0';ptr++) {
+  for (const char *ptr = figure;*ptr!='\0';ptr++) {
     if (*ptr == ';') {
       curve_count++;
     }
