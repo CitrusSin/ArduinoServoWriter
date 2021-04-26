@@ -1,0 +1,16 @@
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\bin\Debug\WriterControl.exe.config
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\bin\Debug\WriterControl.exe
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\bin\Debug\WriterControl.pdb
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl.csprojAssemblyReference.cache
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\MainWindow.g.cs
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\App.g.cs
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl_MarkupCompile.cache
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl_MarkupCompile.lref
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\App.baml
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\MainWindow.baml
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl.g.resources
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl.Properties.Resources.resources
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl.csproj.GenerateResource.cache
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl.csproj.CoreCompileInputs.cache
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl.exe
+C:\Users\Lenovo\Desktop\ArduinoServoWriter\WriterControl\WriterControl\obj\Debug\WriterControl.pdb
