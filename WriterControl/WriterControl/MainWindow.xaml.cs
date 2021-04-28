@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +24,17 @@ namespace WriterControl
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void OutputInfo(string str)
+        {
+            infoOutputBox.AppendText(str + Environment.NewLine);
+        }
+
+        private void WindowLoaded(object sender, RoutedEventArgs e)
+        {
+            comSelect.ItemsSource = SerialPort.GetPortNames();
+
         }
     }
 }

@@ -225,7 +225,6 @@ void setup() {
   delay(500);
   apply_coords({0, 0});
 }
-
 #ifndef RESET_ANGLES
 
 #ifndef DEBUG
@@ -233,14 +232,31 @@ void loop() {
   lcd.clear();
   lcd.print("Hand-Writer v1.0");
   lcd.setCursor(0, 1);
-  lcd.print("test");
-  delay(2000);
-  for (int c='0';c<='9';c++) {
-    draw_figurestr(characters[c]);
-    delay(1000);
+  lcd.print("CONNECTING");
+  while (Serial.available() <= 0) {
+    delay(10);
   }
+  int rsize = Serial.read();
+  char *rstr = new char[rsize+1];
+  memset(rstr, 0, rsize+1);
+  Serial.readBytes(rstr, rsize);
+  if (strcmp(rstr, "REQ_C MIWRITER") == 0) {
+    lcd.setCursor(0, 1);
+    lcd.print("CONNECTED ");
+  }
+  delete rstr;
   while (true) {
-    delay(1000);
+    while (Serial.available() <= 0) {
+      delay(10);
+    }
+    int size = Serial.read();
+    char *str = new char[size+1];
+    memset(str, 0, size+1);
+    Serial.readBytes(str, size);
+    if (str[0] == 'C') {
+      draw_figurestr(characters[str[1]]);
+    }
+    delete str;
   }
 }
 #else
