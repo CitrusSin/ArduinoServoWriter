@@ -5,20 +5,33 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <Style x:Key="SimplyButton" TargetType="Button">
+            <Style TargetType="Button">
                 <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Background" Value="DeepSkyBlue" />
+                <Setter Property="BorderBrush" Value="#70000000" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <Grid>
                                 <Border Background="{TemplateBinding Background}" />
-                                <Border x:Name="rect" Background="{TemplateBinding BorderBrush}" />
+                                <Border x:Name="rect" Background="{TemplateBinding BorderBrush}" Opacity="0" />
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Grid>
                             <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="False">
-                                    <Setter TargetName="rect" Property="Opacity" Value="0" />
-                                </Trigger>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation BeginTime="0" To="1" Duration="0:0:0.1" Storyboard.TargetName="rect" Storyboard.TargetProperty="Opacity" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation BeginTime="0" To="0" Duration="0:0:0.1" Storyboard.TargetName="rect" Storyboard.TargetProperty="Opacity" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
@@ -54,10 +67,10 @@
                                                 Foreground="White"
                                                 FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"
                                                 />
-                                            <Button Grid.Column="2" Style="{StaticResource SimplyButton}" Click="MinimizeButtonClick" Margin="4" Background="Transparent" BorderBrush="Gray">
+                                            <Button Grid.Column="2" Click="MinimizeButtonClick" Margin="4" Background="Transparent" BorderBrush="Gray">
                                                 <Image Source="minimize.png" />
                                             </Button>
-                                            <Button Grid.Column="3" Style="{StaticResource SimplyButton}" Click="CloseButtonClick" Margin="4" Background="Transparent" BorderBrush="Red">
+                                            <Button Grid.Column="3" Click="CloseButtonClick" Margin="4" Background="Transparent" BorderBrush="Red">
                                                 <Image Source="close.png" />
                                             </Button>
                                         </Grid>
