@@ -236,7 +236,7 @@ void loop() {
   while (Serial.available() <= 0) {
     delay(10);
   }
-  int rsize = Serial.read();
+  unsigned int rsize = Serial.read();
   char *rstr = new char[rsize+1];
   memset(rstr, 0, rsize+1);
   Serial.readBytes(rstr, rsize);
@@ -249,7 +249,7 @@ void loop() {
     while (Serial.available() <= 0) {
       delay(10);
     }
-    int size = Serial.read();
+    unsigned int size = Serial.read();
     char *str = new char[size+1];
     memset(str, 0, size+1);
     Serial.readBytes(str, size);

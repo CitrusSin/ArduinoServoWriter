@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -21,20 +22,63 @@ namespace WriterControl
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Writer writer;
+
+        private readonly Storyboard errorPopupStoryboard;
+
         public MainWindow()
         {
             InitializeComponent();
+            this.errorPopupStoryboard = (Storyboard)Resources["popupError"];
+            errorPopupStoryboard.Completed += ErrorPopupStoryboardCompleted;
         }
 
-        private void OutputInfo(string str)
+        private void ErrorPopupStoryboardCompleted(object sender, EventArgs e)
         {
-            infoOutputBox.AppendText(str + Environment.NewLine);
+            errorText.Text = "";
+        }
+
+        private void ShowException(Exception e)
+        {
+            errorText.Text = e.ToString();
+            errorPopupStoryboard.Begin();
+        }
+
+        private void OutputInfoSafely(string str)
+        {
+            infoOutputBox.Dispatcher.Invoke(() =>
+            {
+                infoOutputBox.AppendText(str + Environment.NewLine);
+            });
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             comSelect.ItemsSource = SerialPort.GetPortNames();
+        }
 
+        private void ConnectClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (writer == null || !writer.IsConnected)
+                {
+                    string com = comSelect.SelectedItem as string;
+                    writer = new Writer(com);
+                    writer.ReceiveString += OutputInfoSafely;
+                    writer.Connect();
+                    connectButton.Content = "断开";
+                }
+                else
+                {
+                    writer.Dispose();
+                    connectButton.Content = "连接";
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowException(ex);
+            }
         }
     }
 }
