@@ -10,7 +10,7 @@ namespace WriterControl
     public class Writer : IDisposable
     {
         private readonly SerialPort serial;
-        private LinkedList<char> readBuffer = new LinkedList<char>();
+        private List<byte> readBuffer = new List<byte>();
 
         public bool IsConnected => serial.IsOpen;
 
@@ -26,17 +26,7 @@ namespace WriterControl
 
         private void SerialReceive(object sender, SerialDataReceivedEventArgs e)
         {
-            char c = (char)serial.ReadChar();
-            if (c == '\n')
-            {
-                string s = new string(readBuffer.ToArray());
-                readBuffer.Clear();
-                ReceiveString(s);
-            }
-            else
-            {
-                readBuffer.AddLast(c);
-            }
+            ReceiveString(serial.ReadExisting());
         }
 
         public void Connect()

@@ -15,7 +15,7 @@
                             <Grid>
                                 <Border Background="{TemplateBinding Background}" />
                                 <Border x:Name="rect" Background="{TemplateBinding BorderBrush}" Opacity="0" />
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,5,0" />
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <EventTrigger RoutedEvent="MouseEnter">

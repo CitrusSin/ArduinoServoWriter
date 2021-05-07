@@ -55,15 +55,15 @@ void pen(int state) {
   switch (state) {
     case DROP:
       if (pen_state == HANG) {
-        soft_approach_servo(&sv_pen, 31, 12);
+        soft_approach_servo(&sv_pen, 30, 12);
         pen_state = DROP;
       }
     break;
     case HANG:
       if (pen_state == DROP) {
-        sv_pen.write(33);
+        sv_pen.write(32);
         delay(100);
-        sv_pen.write(31);
+        sv_pen.write(30);
         pen_state = HANG;
       }
     break;

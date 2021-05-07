@@ -48,13 +48,21 @@ namespace WriterControl
         {
             infoOutputBox.Dispatcher.Invoke(() =>
             {
-                infoOutputBox.AppendText(str + Environment.NewLine);
+                infoOutputBox.AppendText(str);
+                infoOutputBox.ScrollToEnd();
             });
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             comSelect.ItemsSource = SerialPort.GetPortNames();
+            char[] allChars = new char[10];
+            for (int i=0;i<10;i++)
+            {
+                char p = (char)(0x30 | i);
+                allChars[i] = p;
+            }
+            characterSelectComboBox.ItemsSource = allChars;
         }
 
         private void ConnectClick(object sender, RoutedEventArgs e)
@@ -79,6 +87,16 @@ namespace WriterControl
             {
                 ShowException(ex);
             }
+        }
+
+        private void SendCharClick(object sender, RoutedEventArgs e)
+        {
+            writer.Write("C"+characterSelectComboBox.SelectedItem);
+        }
+
+        private void ComSelect_MouseEnter(object sender, MouseEventArgs e)
+        {
+            comSelect.ItemsSource = SerialPort.GetPortNames();
         }
     }
 }
