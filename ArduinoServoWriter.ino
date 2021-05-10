@@ -43,7 +43,7 @@ void attach_servos() {
 void soft_approach_servo(Servo *sv, double fromAngle, double toAngle) {
   for (double nowAngle = fromAngle; abs(nowAngle-toAngle) > 0.05; nowAngle += (toAngle-nowAngle)*0.5) {
     sv->write((int)nowAngle);
-    delay(100);
+    delay(90);
   }
   sv->write(toAngle);
 }
